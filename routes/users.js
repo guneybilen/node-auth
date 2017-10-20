@@ -43,23 +43,18 @@ router.post('/register', upload.single('profileimage'), function(req, res, next)
   var username = req.body.username;
   var password = req.body.password;
   var password2 = req.body.password2;
-
+  var profileImageName = '';
 
   // Check for image field
-  if(req.file.profileimage) {
+  if(req.file) {
     console.log('Uploading file...');
 
     // File info (gets the filename)
-    var profileImageOriginalName = req.file.profileimage.originalname;
-    var profileImageName = req.file.profileimage.name;
-    var profileImageMimeType = req.file.profileimage.mimetype;
-    var profileImagePath = req.file.profileimage.path;
-    var profileImageExt = req.file.profileimage.extension;
-    var profileImageSize = req.file.profileimage.size;
+    profileImageName = req.file.filename;
   } else {
     // Set a default image
     console.log('No file uploaded...');
-    var profileimage = 'noimage.png';
+    profileImageName = 'noimage.png';
     
   }
 
