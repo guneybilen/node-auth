@@ -1,0 +1,5 @@
+# the two lines below these comments mean:
+# "track the folder but not the files in it."
+
+*
+!.gitignore

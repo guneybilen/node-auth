@@ -23,9 +23,6 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// Handle file uploads
-app.use(multer({dest:__dirname+'/uploads'}).any());
-// app.use(multer({dest:'./uploads'})); # gives error.
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));

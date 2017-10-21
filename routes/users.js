@@ -1,18 +1,23 @@
-// var express = require('express');
-// var router = express.Router();
-
-// /* GET users listing. */
-// router.get('/', function(req, res, next) {
-//   res.send('respond with a resource');
-// });
-
-// module.exports = router;
-
-
 var express = require('express');
 var router = express.Router();
+var path = require('path');
 var multer = require('multer');
-var upload = multer({dest:'./uploads'});
+
+
+var storage = multer.diskStorage({
+    
+    destination: function (req, file, cb) {
+        var dest = 'public/images/uploads/';
+        //   mkdirp.sync(dest);
+        cb(null, dest);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+var upload = multer({ storage: storage }).single('profileimage');
+
 
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
@@ -36,56 +41,67 @@ router.get('/login', function(req, res, next) {
   });
 });
 
-router.post('/register', upload.single('profileimage'), function(req, res, next) {
-  // Get the form values
-  var name = req.body.name;
-  var email = req.body.email;
-  var username = req.body.username;
-  var password = req.body.password;
-  var password2 = req.body.password2;
-  var profileImageName = '';
-
-  // Check for image field
-  if(req.file) {
-    console.log('Uploading file...');
-
-    // File info (gets the filename)
-    profileImageName = req.file.filename;
-  } else {
-    // Set a default image
-    console.log('No file uploaded...');
-    profileImageName = 'noimage.png';
+router.post('/register', function(req, res, next) {
+  upload(req, res, function (err) {
     
-  }
+    // Get the form values
+    var name = req.body.name;
+    var email = req.body.email;
+    var username = req.body.username;
+    var password = req.body.password;
+    var password2 = req.body.password2;
+    var profileImageName = '';
 
-  // Form validation
-  req.checkBody('name', 'Name field is required').notEmpty();
-  req.checkBody('email', 'Email field is required').notEmpty();
-  req.checkBody('email', 'Not a valid email').isEmail();
-  req.checkBody('username', 'Username field is required').notEmpty();
-  req.checkBody('password', 'Password field is required').notEmpty();
-  req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
+    // Check for image field
+    if(req.file) {
+      console.log('Uploading file...');
 
-  // Checks for errors
-  var errors = req.validationErrors();
+      // File info (gets the filename)
+      profileImageName = req.file.filename;
+    } else {
+      // Set a default image
+      console.log('No file uploaded...');
+      profileImageName = 'noimage.png';
+    
+    }
+    
+     if (err) {
+        // An error occurred when uploading
+        //   res.render('index', {
+        //       'errors': err
+        //   });
+        console.log(err);
+     }
+        
 
-  if(errors) {
-    res.render('register', {
-      errors: errors,
-      name: name,
-      email: email,
-      username: username,
-      password: password,
-      password2: password2
+    // Form validation
+    req.checkBody('name', 'Name field is required').notEmpty();
+    req.checkBody('email', 'Email field is required').notEmpty();
+    req.checkBody('email', 'Not a valid email').isEmail();
+    req.checkBody('username', 'Username field is required').notEmpty();
+    req.checkBody('password', 'Password field is required').notEmpty();
+    req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
+
+    // Checks for errors
+    var errors = req.validationErrors();
+
+    if(errors) {
+      res.render('register', {
+        errors: errors,
+        name: name,
+        email: email,
+        username: username,
+        password: password,
+        password2: password2
     });
-  } else {
-    var newUser = new User({
-      name: name,
-      email: email,
-      username: username,
-      password: password,
-      profileimage: profileImageName
-    });
+    } else {
+        var newUser = new User({
+        name: name,
+        email: email,
+        username: username,
+        password: password,
+        profileimage: profileImageName
+      });
 
     // Create user
     User.createUser(newUser, function(err, user) {
@@ -98,7 +114,8 @@ router.post('/register', upload.single('profileimage'), function(req, res, next)
 
     res.location('/');
     res.redirect('/');
-  }
+    }
+  });
 });
 
 passport.serializeUser(function(user, done) {
